@@ -1,0 +1,14 @@
+services:
+  api:
+    image: workshop-booking-nestjs:dev
+    build: .
+    command: npm run start:dev
+    environment:
+      PORT: ${PORT:-3000}
+      DATABASE_PATH: ${DATABASE_PATH:-data/workshop-booking.sqlite}
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret}
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - /app/node_modules

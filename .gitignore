@@ -1,0 +1,10 @@
+node_modules/
+dist/
+coverage/
+data/*
+!data/.gitkeep
+
+.env
+.idea/
+db.sqlite3
+npm-debug.log*
