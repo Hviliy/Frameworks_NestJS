@@ -1,7 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
+import { Booking } from '../bookings/booking.entity';
 import { User } from '../users/user.entity';
 import { CreateWorkshopDto } from './dto/create-workshop.dto';
 import { UpdateWorkshopDto } from './dto/update-workshop.dto';
@@ -13,6 +18,8 @@ export class WorkshopsService {
   constructor(
     @InjectRepository(Workshop)
     private readonly workshopsRepository: Repository<Workshop>,
+    @InjectRepository(Booking)
+    private readonly bookingsRepository: Repository<Booking>,
   ) {}
 
   async findAll(): Promise<WorkshopResponse[]> {
@@ -48,6 +55,17 @@ export class WorkshopsService {
 
   async update(id: number, dto: UpdateWorkshopDto): Promise<WorkshopResponse> {
     const workshop = await this.findEntity(id);
+
+    if (dto.capacity !== undefined) {
+      const bookingsCount = await this.bookingsRepository.count({
+        where: { workshop: { id } },
+      });
+      if (dto.capacity < bookingsCount) {
+        throw new BadRequestException(
+          'Вместимость не может быть меньше количества существующих бронирований',
+        );
+      }
+    }
 
     if (dto.title !== undefined) workshop.title = dto.title;
     if (dto.description !== undefined) workshop.description = dto.description;
